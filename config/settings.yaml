@@ -1,0 +1,56 @@
+app:
+  name: "agentic-rag-coder"
+  version: "1.0.0"
+
+models:
+  default_provider: "groq" # "groq", "openai", or "anthropic"
+  groq:
+    model_name: "groq/llama-3.3-70b-versatile"
+    temperature: 0.1
+    max_tokens: 4000
+  openai:
+    model_name: "gpt-4o-mini"
+    temperature: 0.1
+    max_tokens: 4000
+  anthropic:
+    model_name: "claude-3-5-sonnet-20241022"
+    temperature: 0.1
+    max_tokens: 4000
+  embedding:
+    provider: "chroma_default" # "chroma_default" (local, free) or "openai"
+    model_name: "all-MiniLM-L6-v2"
+
+vector_store:
+  persist_directory: "./data/chroma_db"
+  collection_name: "knowledge_base"
+  top_k: 4
+  similarity_threshold: 0.70
+
+ingestion:
+  default_path: "./data/raw"
+  chunk_size: 800
+  chunk_overlap: 100
+  hash_db_path: "./data/chroma_db/file_hashes.json"
+  supported_extensions:
+    - ".py"
+    - ".js"
+    - ".ts"
+    - ".jsx"
+    - ".tsx"
+    - ".html"
+    - ".css"
+    - ".md"
+    - ".txt"
+    - ".json"
+    - ".yaml"
+    - ".yml"
+    - ".pdf"
+    - ".docx"
+
+search:
+  tavily_max_results: 3
+  search_depth: "basic"
+
+memory:
+  enabled: false
+  storage_path: "./data/memory"

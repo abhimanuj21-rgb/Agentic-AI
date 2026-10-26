@@ -1,0 +1,36 @@
+retrieve_task:
+  description: >
+    Receive the user coding question: "{user_query}".
+    Query the local ChromaDB vector store using the VectorStoreQueryTool to find the most relevant code snippets, notes, and documentation chunks.
+    Filter results by relevance and extract exact file paths, chunk IDs, and snippet text.
+    If no relevant documents are found in the local vector store, clearly state that no local context matched the query.
+  expected_output: >
+    A structured report containing:
+    1. A list of retrieved local snippets with source file paths and relevance scores.
+    2. A summary of the extracted local knowledge.
+    3. An explicit status: "LOCAL_CONTEXT_FOUND" or "NO_LOCAL_CONTEXT_FOUND".
+  agent: retriever_agent
+
+research_task:
+  description: >
+    Review the user query "{user_query}" and the local context status.
+    If local context is absent, insufficient, or if the question requires third-party API specs or recent library versions, use the WebSearchTool to search external documentation.
+    Collect authoritative URLs, snippet excerpts, and code samples.
+    If local context was already completely sufficient, skip making redundant web calls.
+    If external search is disabled or unavailable due to missing API keys, clearly indicate this constraint.
+  expected_output: >
+    A summary of external research findings with source URLs, or a confirmation that external search was unnecessary or unavailable.
+  agent: researcher_agent
+
+coding_task:
+  description: >
+    Synthesize the final technical solution for the user's question: "{user_query}".
+    Carefully examine both local context from the Retriever Agent and any external findings from the Researcher Agent.
+    Provide:
+    1. A direct, clear technical explanation or solution.
+    2. Well-commented, production-ready code blocks if requested or needed.
+    3. Explicit citations section listing every local file path or web URL referenced.
+    4. Guardrail note: If neither local files nor external search had enough info, clearly state what is missing rather than guessing or hallucinating.
+  expected_output: >
+    A complete markdown response with solution explanation, code blocks, and a "Sources & Citations" section.
+  agent: coding_agent

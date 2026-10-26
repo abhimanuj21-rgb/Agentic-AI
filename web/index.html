@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic RAG Coder | Multi-Agent AI System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Header -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="brand-icon">
+          <div class="glow-orb"></div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Agentic RAG Coder</h1>
+          <span class="badge-crew">CrewAI Hierarchical Orchestration</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-pill active" id="vector-status-pill">
+          <span class="status-dot"></span>
+          <span id="vector-status-text">Vector DB: Ready</span>
+        </div>
+        <div class="status-pill" id="chunks-count-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+          <span id="chunks-count-text">0 Chunks</span>
+        </div>
+        <div class="status-pill model-badge" id="provider-pill">
+          <span class="provider-label">LLM:</span>
+          <span id="provider-text" class="provider-value">Groq / OpenAI</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="chat-view" id="tab-chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Agentic Chat
+      </button>
+      <button class="tab-btn" data-tab="knowledge-view" id="tab-knowledge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Knowledge Base & Ingestion
+      </button>
+      <button class="tab-btn" data-tab="explorer-view" id="tab-explorer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Vector Search Explorer
+      </button>
+      <button class="tab-btn" data-tab="agents-view" id="tab-agents">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Crew Agents & Memory
+      </button>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="content-viewport">
+      <!-- 1. CHAT TAB -->
+      <section class="tab-panel active" id="chat-view">
+        <div class="chat-container">
+          <div class="chat-history" id="chat-messages">
+            <!-- Welcome Bot Greeting -->
+            <div class="message-card assistant welcome-card">
+              <div class="card-avatar">🤖</div>
+              <div class="card-body">
+                <div class="card-header">
+                  <span class="agent-name">Crew Lead & Senior Coder</span>
+                  <span class="timestamp">Just now</span>
+                </div>
+                <div class="markdown-content">
+                  <p>Welcome to <strong>Agentic RAG Coder</strong>. I am your multi-agent coding crew coordinated by a hierarchical manager. I search your local indexed files in ChromaDB, retrieve code definitions, check external technical docs when needed, and deliver grounded code with strict citations.</p>
+                  <div class="suggested-prompts">
+                    <p class="suggestions-label">Try asking:</p>
+                    <div class="prompt-chips">
+                      <button class="chip" data-prompt="How does TokenService verify tokens and what is the TTL?">TokenService verification & TTL</button>
+                      <button class="chip" data-prompt="What are the database connection pooling rules?">Database pooling rules</button>
+                      <button class="chip" data-prompt="What is the error handling JSON format standard?">API error format standard</button>
+                      <button class="chip" data-prompt="Write a Python unit test for AuthService">Write unit test for AuthService</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agent Live Step Indicator (Hidden by default, shown during generation) -->
+          <div class="agent-stepper" id="agent-stepper" style="display: none;">
+            <div class="stepper-title">
+              <span class="spinner"></span>
+              <span>Crew Collaboration in Progress...</span>
+            </div>
+            <div class="step-nodes">
+              <div class="step-node" id="step-manager">
+                <div class="node-circle">1</div>
+                <div class="node-info">
+                  <span class="node-role">Manager Agent</span>
+                  <span class="node-desc">Evaluating RAG Strategy</span>
+                </div>
+              </div>
+              <div class="step-node" id="step-retriever">
+                <div class="node-circle">2</div>
+                <div class="node-info">
+                  <span class="node-role">Retriever Agent</span>
+                  <span class="node-desc">Querying Vector Store</span>
+                </div>
+              </div>
+              <div class="step-node" id="step-researcher">
+                <div class="node-circle">3</div>
+                <div class="node-info">
+                  <span class="node-role">Researcher Agent</span>
+                  <span class="node-desc">Checking Web Fallback</span>
+                </div>
+              </div>
+              <div class="step-node" id="step-coder">
+                <div class="node-circle">4</div>
+                <div class="node-info">
+                  <span class="node-role">Coding Agent</span>
+                  <span class="node-desc">Synthesizing Code & Citations</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input Bar -->
+          <div class="chat-input-wrapper">
+            <form id="chat-form" class="chat-form">
+              <textarea
+                id="user-input"
+                placeholder="Ask a technical or codebase question (e.g. 'How does TokenService handle token expiration?')..."
+                rows="1"
+                required
+              ></textarea>
+              <div class="input-actions">
+                <label class="memory-toggle" title="Enable session history context">
+                  <input type="checkbox" id="memory-checkbox" checked>
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">Memory</span>
+                </label>
+                <button type="submit" id="send-btn" class="primary-btn">
+                  <span>Send</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. KNOWLEDGE BASE & INGESTION TAB -->
+      <section class="tab-panel" id="knowledge-view">
+        <div class="panel-inner">
+          <div class="panel-header-actions">
+            <div>
+              <h2>Local Knowledge Base</h2>
+              <p class="panel-subtitle">Directory: <code>./data/raw</code> with SHA-256 incremental hashing</p>
+            </div>
+            <div class="action-buttons">
+              <button class="secondary-btn" id="btn-sync-index">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>Sync / Re-Index Now</span>
+              </button>
+              <button class="secondary-btn danger-hover" id="btn-reset-index">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                <span>Reset Index</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ingestion Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Total Indexed Files</span>
+              <span class="stat-value" id="stat-files-count">0</span>
+              <span class="stat-sub">Skipped unchanged automatically</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total Vector Chunks</span>
+              <span class="stat-value" id="stat-chunks-count">0</span>
+              <span class="stat-sub">Chunk size: 800 | Overlap: 100</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Embedding Engine</span>
+              <span class="stat-value" id="stat-engine-name">Chroma / MiniLM</span>
+              <span class="stat-sub">Cosine space vector indexing</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Vector Storage Location</span>
+              <span class="stat-value" style="font-size: 1.1rem;" id="stat-persist-dir">./data/chroma_db</span>
+              <span class="stat-sub">Local persistent store</span>
+            </div>
+          </div>
+
+          <!-- Files Table -->
+          <div class="card-section">
+            <h3>Discovered Local Documents & Code</h3>
+            <div class="table-container">
+              <table class="data-table" id="files-table">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Last Modified</th>
+                    <th>Hash Status</th>
+                  </tr>
+                </thead>
+                <tbody id="files-table-body">
+                  <tr>
+                    <td colspan="5" class="table-loading">Scanning local files...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Add / Ingest Document Card -->
+          <div class="card-section">
+            <h3>Quick Add Document to Raw Knowledge</h3>
+            <form id="add-doc-form" class="add-doc-grid">
+              <div class="form-group">
+                <label for="new-doc-name">File Name (e.g. <code>payment_service.py</code> or <code>notes.md</code>)</label>
+                <input type="text" id="new-doc-name" required placeholder="example_module.py">
+              </div>
+              <div class="form-group full-width">
+                <label for="new-doc-content">Document / Code Content</label>
+                <textarea id="new-doc-content" rows="6" required placeholder="Paste code snippet, API specification, or technical notes here..."></textarea>
+              </div>
+              <div class="full-width">
+                <button type="submit" class="primary-btn">
+                  <span>Save & Index Document</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. VECTOR EXPLORER TAB -->
+      <section class="tab-panel" id="explorer-view">
+        <div class="panel-inner">
+          <div class="panel-header-actions">
+            <div>
+              <h2>Vector Store Query Explorer</h2>
+              <p class="panel-subtitle">Test semantic retrieval, inspect cosine distance, and audit chunk metadata</p>
+            </div>
+          </div>
+
+          <div class="explorer-search-card">
+            <form id="vector-search-form" class="search-bar-form">
+              <div class="search-input-group">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="vector-query-input" placeholder="Enter semantic query to test (e.g. 'JWT token expiration duration')..." required>
+                <button type="submit" class="primary-btn">Search Vector DB</button>
+              </div>
+
+              <div class="search-controls">
+                <div class="control-item">
+                  <label for="search-top-k">Top-K Chunks: <strong id="top-k-label">4</strong></label>
+                  <input type="range" id="search-top-k" min="1" max="10" value="4">
+                </div>
+                <div class="control-item">
+                  <label for="search-thresh">Similarity Threshold: <strong id="thresh-label">0.35</strong></label>
+                  <input type="range" id="search-thresh" min="0.10" max="0.90" step="0.05" value="0.35">
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Search Results Area -->
+          <div class="search-results-list" id="vector-results-container">
+            <div class="empty-state">
+              <p>Enter a query above to inspect matching vector store chunks.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. CREW AGENTS & MEMORY TAB -->
+      <section class="tab-panel" id="agents-view">
+        <div class="panel-inner">
+          <div class="panel-header-actions">
+            <div>
+              <h2>CrewAI Agent Team & Session Memory</h2>
+              <p class="panel-subtitle">Hierarchical team roles, tool allocations, and conversation history</p>
+            </div>
+            <div>
+              <button class="secondary-btn danger-hover" id="btn-clear-session">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                <span>Clear Session Memory</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Agent Roster Grid -->
+          <div class="agents-roster-grid">
+            <div class="agent-roster-card">
+              <div class="agent-avatar-badge role-manager">👑</div>
+              <div class="agent-details">
+                <h4>Manager Agent</h4>
+                <span class="role-tag">Orchestrator & Lead</span>
+                <p class="agent-goal">Decides whether queries need local RAG, external search, or both, delegates subtasks, and verifies engineering synthesis.</p>
+                <div class="agent-tools">
+                  <span class="tool-tag">Process.hierarchical</span>
+                  <span class="tool-tag">Delegation Router</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agent-roster-card">
+              <div class="agent-avatar-badge role-retriever">🔍</div>
+              <div class="agent-details">
+                <h4>Retriever Agent</h4>
+                <span class="role-tag">Context Retrieval Specialist</span>
+                <p class="agent-goal">Queries local ChromaDB vector store and extracts high-relevance code snippets with file and line metadata.</p>
+                <div class="agent-tools">
+                  <span class="tool-tag">VectorStoreQueryTool</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agent-roster-card">
+              <div class="agent-avatar-badge role-researcher">🌐</div>
+              <div class="agent-details">
+                <h4>Researcher Agent</h4>
+                <span class="role-tag">External Knowledge Fetcher</span>
+                <p class="agent-goal">Fetches up-to-date documentation, API specs, and bug solutions from Tavily/SerpAPI when local files lack context.</p>
+                <div class="agent-tools">
+                  <span class="tool-tag">WebSearchTool</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agent-roster-card">
+              <div class="agent-avatar-badge role-coder">💻</div>
+              <div class="agent-details">
+                <h4>Coding Agent</h4>
+                <span class="role-tag">Senior Software Engineer</span>
+                <p class="agent-goal">Synthesizes clean, production-grade solutions grounded in retrieved context with strict source citations.</p>
+                <div class="agent-tools">
+                  <span class="tool-tag">CodeExecutionTool</span>
+                  <span class="tool-tag">FileWriteTool</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Session Memory History Section -->
+          <div class="card-section">
+            <h3>Persisted Session Memory History</h3>
+            <div class="session-history-box" id="session-history-container">
+              <div class="empty-state">
+                <p>No prior turns in this session. Ask questions in the chat to accumulate conversational memory.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
